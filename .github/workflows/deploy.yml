@@ -9,6 +9,11 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    permissions: # Add this block to ensure correct permissions
+      contents: write
+      pages: write
+      id-token: write
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
