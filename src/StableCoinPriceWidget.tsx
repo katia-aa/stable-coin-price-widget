@@ -50,6 +50,11 @@ const StablecoinPriceWidget: React.FC = () => {
     usdg: 0,
   });
 
+  const [amount, setAmount] = useState<number>(0);
+  const [fromCoin, setFromCoin] = useState<keyof Prices>("usdc");
+  const [toCoin, setToCoin] = useState<keyof Prices>("usdt");
+  const [conversionResult, setConversionResult] = useState<number | null>(null);
+
   const fetchData = async () => {
     try {
       setShowErrorBanner(false);
@@ -122,7 +127,7 @@ const StablecoinPriceWidget: React.FC = () => {
     // Initial fetch
     fetchData();
 
-    // Fetch every 5 minutes
+    // Fetch every 13 seconds to avoid rate limiting (kind of).
     const intervalId = setInterval(fetchData, 13000);
     return () => clearInterval(intervalId);
   }, []);
@@ -134,7 +139,6 @@ const StablecoinPriceWidget: React.FC = () => {
   };
 
   const formatPrice = (price: number) => {
-    // return price === 0 ? "-" : price.toFixed(4);
     return price;
   };
 
@@ -142,6 +146,13 @@ const StablecoinPriceWidget: React.FC = () => {
     // e.g. show +2.45% or -1.23%
     const sign = change > 0 ? "+" : "";
     return `${sign}${change.toFixed(2)}%`;
+  };
+
+  const handleConversion = () => {
+    if (prices[fromCoin] && prices[toCoin]) {
+      const result = (amount / prices[fromCoin]) * prices[toCoin];
+      setConversionResult(result);
+    }
   };
 
   return (
@@ -212,6 +223,69 @@ const StablecoinPriceWidget: React.FC = () => {
       <div className="flex justify-between mb-2 text-sm text-gray-500">
         <span>24h Change:</span>
         <span>{formatChange(priceChanges24h.usdt)}</span>
+      </div>
+
+      {/* Stablecoin Converter */}
+      <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold mb-4">Stablecoin Converter</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Amount
+            </label>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              className="border p-2 w-full rounded"
+              placeholder="Enter amount"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              From
+            </label>
+            <select
+              value={fromCoin}
+              onChange={(e) => setFromCoin(e.target.value as keyof Prices)}
+              className="border p-2 w-full rounded"
+            >
+              <option value="usdc">USDC</option>
+              <option value="usdt">USDT</option>
+              <option value="dai">DAI</option>
+              <option value="ghost">GHOST</option>
+              <option value="usdg">USDG</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              To
+            </label>
+            <select
+              value={toCoin}
+              onChange={(e) => setToCoin(e.target.value as keyof Prices)}
+              className="border p-2 w-full rounded"
+            >
+              <option value="usdc">USDC</option>
+              <option value="usdt">USDT</option>
+              <option value="dai">DAI</option>
+              <option value="ghost">GHOST</option>
+              <option value="usdg">USDG</option>
+            </select>
+          </div>
+        </div>
+        <button
+          onClick={handleConversion}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+        >
+          Convert
+        </button>
+        {conversionResult !== null && (
+          <div className="mt-4 p-2 bg-green-100 text-green-800 rounded">
+            <strong>Result:</strong> {conversionResult.toFixed(4)}{" "}
+            {toCoin.toUpperCase()}
+          </div>
+        )}
       </div>
     </div>
   );
