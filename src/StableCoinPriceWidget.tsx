@@ -4,39 +4,63 @@ type Prices = {
   usdc: number;
   usdt: number;
   dai: number;
+  ghost: number;
+  aave: number;
+  usdg: number;
 };
 
 type PriceChangeDirection = {
   usdc: "up" | "down" | "same";
   usdt: "up" | "down" | "same";
   dai: "up" | "down" | "same";
+  ghost: "up" | "down" | "same";
+  aave: "up" | "down" | "same";
+  usdg: "up" | "down" | "same";
 };
 
 const COINGECKO_API_URL =
-  "https://api.coingecko.com/api/v3/simple/price?ids=usd-coin,tether,dai&vs_currencies=usd&include_24hr_change=true";
-
+  "https://api.coingecko.com/api/v3/simple/price?ids=usd,tether,dai,ghost,aave,usdg&vs_currencies=usd&include_24hr_change=true";
 const StablecoinPriceWidget: React.FC = () => {
-  const [prices, setPrices] = useState<Prices>({ usdc: 0, usdt: 0, dai: 0 });
+  const [prices, setPrices] = useState<Prices>({
+    usdc: 0,
+    usdt: 0,
+    dai: 0,
+    ghost: 0,
+    aave: 0,
+    usdg: 0,
+  });
   const [priceChangeDir, setPriceChangeDir] = useState<PriceChangeDirection>({
     usdc: "same",
     usdt: "same",
     dai: "same",
+    ghost: "same",
+    aave: "same",
+    usdg: "same",
   });
   const [priceChanges24h, setPriceChanges24h] = useState<Prices>({
     usdc: 0,
     usdt: 0,
     dai: 0,
+    ghost: 0,
+    aave: 0,
+    usdg: 0,
   });
   const [showErrorBanner, setShowErrorBanner] = useState(false);
-
   // Keep track of the last prices to compare movement
-  const lastPricesRef = useRef<Prices>({ usdc: 0, usdt: 0, dai: 0 });
+  const lastPricesRef = useRef<Prices>({
+    usdc: 0,
+    usdt: 0,
+    dai: 0,
+    ghost: 0,
+    aave: 0,
+    usdg: 0,
+  });
 
   const fetchData = async () => {
     try {
       const response = await fetch(COINGECKO_API_URL);
 
-      if (response.status === 429) {
+      if (response.status !== 200) {
         setShowErrorBanner(true);
         return;
       }
@@ -47,11 +71,17 @@ const StablecoinPriceWidget: React.FC = () => {
         usdc: data["usd-coin"]?.usd ?? 0,
         usdt: data["tether"]?.usd ?? 0,
         dai: data["dai"]?.usd ?? 0,
+        ghost: data["ghost"]?.usd ?? 0,
+        aave: data["aave"]?.usd ?? 0,
+        usdg: data["usdg"]?.usd ?? 0,
       };
       const new24hChanges: Prices = {
         usdc: data["usd-coin"]?.usd_24h_change ?? 0,
         usdt: data["tether"]?.usd_24h_change ?? 0,
         dai: data["dai"]?.usd_24h_change ?? 0,
+        ghost: data["ghost"]?.usd_24h_change ?? 0,
+        aave: data["aave"]?.usd_24h_change ?? 0,
+        usdg: data["usdg"]?.usd_24h_change ?? 0,
       };
 
       // Determine price movement direction
@@ -72,6 +102,24 @@ const StablecoinPriceWidget: React.FC = () => {
           newPrices.dai > lastPricesRef.current.dai
             ? "up"
             : newPrices.dai < lastPricesRef.current.dai
+            ? "down"
+            : "same",
+        ghost:
+          newPrices.ghost > lastPricesRef.current.ghost
+            ? "up"
+            : newPrices.ghost < lastPricesRef.current.ghost
+            ? "down"
+            : "same",
+        aave:
+          newPrices.aave > lastPricesRef.current.aave
+            ? "up"
+            : newPrices.aave < lastPricesRef.current.aave
+            ? "down"
+            : "same",
+        usdg:
+          newPrices.usdg > lastPricesRef.current.usdg
+            ? "up"
+            : newPrices.usdg < lastPricesRef.current.usdg
             ? "down"
             : "same",
       };
@@ -122,29 +170,17 @@ const StablecoinPriceWidget: React.FC = () => {
         </div>
       )}
       <h2 className="text-xl mb-4">Stablecoin Prices</h2>
-      {/* USDC */}
+      {/* AAVE */}
       <div className="flex justify-between mb-2">
-        <span>USDC:</span>
-        <span className={getPriceClass(priceChangeDir.usdc)}>
-          {formatPrice(prices.usdc)} USD
+        <span>AAVE:</span>
+        <span className={getPriceClass(priceChangeDir.aave)}>
+          {formatPrice(prices.aave)} USD
         </span>
       </div>
       {/* 24h change (optional) */}
       <div className="flex justify-between mb-2 text-sm text-gray-500">
         <span>24h Change:</span>
-        <span>{formatChange(priceChanges24h.usdc)}</span>
-      </div>
-      {/* USDT */}
-      <div className="flex justify-between mb-2">
-        <span>USDT:</span>
-        <span className={getPriceClass(priceChangeDir.usdt)}>
-          {formatPrice(prices.usdt)} USD
-        </span>
-      </div>
-      {/* 24h change (optional) */}
-      <div className="flex justify-between mb-2 text-sm text-gray-500">
-        <span>24h Change:</span>
-        <span>{formatChange(priceChanges24h.usdt)}</span>
+        <span>{formatChange(priceChanges24h.aave)}</span>
       </div>
       {/* DAI */}
       <div className="flex justify-between mb-2">
@@ -157,6 +193,54 @@ const StablecoinPriceWidget: React.FC = () => {
       <div className="flex justify-between mb-2 text-sm text-gray-500">
         <span>24h Change:</span>
         <span>{formatChange(priceChanges24h.dai)}</span>
+      </div>
+      {/* GHOST */}
+      <div className="flex justify-between mb-2">
+        <span>GHOST:</span>
+        <span className={getPriceClass(priceChangeDir.ghost)}>
+          {formatPrice(prices.ghost)} USD
+        </span>
+      </div>
+      {/* 24h change (optional) */}
+      <div className="flex justify-between mb-2 text-sm text-gray-500">
+        <span>24h Change:</span>
+        <span>{formatChange(priceChanges24h.ghost)}</span>
+      </div>
+      {/* USDC */}
+      <div className="flex justify-between mb-2">
+        <span>USDC:</span>
+        <span className={getPriceClass(priceChangeDir.usdc)}>
+          {formatPrice(prices.usdc)} USD
+        </span>
+      </div>
+      {/* 24h change (optional) */}
+      <div className="flex justify-between mb-2 text-sm text-gray-500">
+        <span>24h Change:</span>
+        <span>{formatChange(priceChanges24h.usdc)}</span>
+      </div>
+      {/* USDG */}
+      <div className="flex justify-between mb-2">
+        <span>USDG:</span>
+        <span className={getPriceClass(priceChangeDir.usdg)}>
+          {formatPrice(prices.usdg)} USD
+        </span>
+      </div>
+      {/* 24h change (optional) */}
+      <div className="flex justify-between mb-2 text-sm text-gray-500">
+        <span>24h Change:</span>
+        <span>{formatChange(priceChanges24h.usdg)}</span>
+      </div>
+      {/* USDT */}
+      <div className="flex justify-between mb-2">
+        <span>USDT:</span>
+        <span className={getPriceClass(priceChangeDir.usdt)}>
+          {formatPrice(prices.usdt)} USD
+        </span>
+      </div>
+      {/* 24h change (optional) */}
+      <div className="flex justify-between mb-2 text-sm text-gray-500">
+        <span>24h Change:</span>
+        <span>{formatChange(priceChanges24h.usdt)}</span>
       </div>
     </div>
   );
